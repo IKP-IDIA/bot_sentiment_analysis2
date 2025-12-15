@@ -159,12 +159,12 @@ def analyze_sentiment(parsed_news):
         polarity = max(-1.0, min(1.0, polarity))
     
         # กำหนด label
-        if polarity > 0.1:
-            label = 'positive'
-        elif polarity < -0.1:
-            label = 'negative'
+        if polarity >= 0:
+            label = 'ไม่พบข้อมูลเชิงลบ'
+        #elif polarity < -0.1:
+        #    label = 'negative'
         else:
-            label = 'neutral'
+            label = 'พบข้อมูลเชิงลบ'
         
         # 4. Append results to the current news item (list)
         news.append(polarity)
@@ -251,13 +251,13 @@ def main(ticker):
     df = pd.DataFrame(analyzed_news, columns=['date', 'time', 'title', 'sentiment','label'])
 
     # Calculate average sentiment
-    cnt = (df['sentiment'] < -0.1).sum()
+    cnt = (df['sentiment'] < 0.0).sum()
     avg_sentiment = df['sentiment'].mean()
 
     sentiment_result = (
-        "ไม่พบข้อมูลเชิงลบ" if avg_sentiment > 0.1 else 
-        "ไม่พบข้อมูลเชิงลบ" if avg_sentiment >= -0.1 else
-        "พบข้อมูลเชิงลบจำนวน" + cnt +"รายการ"
+        "ไม่พบข้อมูลเชิงลบ" if cnt == 0 else 
+        #"ไม่พบข้อมูลเชิงลบ" if avg_sentiment >= -0.1 else
+        "พบข้อมูลเชิงลบจำนวน " + str(cnt) +" รายการ"
     )
 
     API_ENDPOINT = "http://127.0.0.1:8001/api/sentiment" 
@@ -299,10 +299,11 @@ def call_function(ticker):
     search_keyword = ticker.strip()
     final_df = main(search_keyword)
     
-    cnt = (final_df['sentiment'] < -0.1).sum()
+    cnt = (final_df['sentiment'] < 0).sum()
+    print(cnt)
     avg_sentiment = final_df['sentiment'].mean()
     sentiment_result = (
-        "ไม่พบข้อมูลเชิงลบ" if avg_sentiment >= 0 else 
+        "ไม่พบข้อมูลเชิงลบ" if cnt == 0 else 
         #"ไม่พบข้อมูลเขิงลบ" if avg_sentiment >= -0.1 else
         "พบข้อมูลเชิงลบจำนวน " + str(cnt) + " รายการ"
     )
